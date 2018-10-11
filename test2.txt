@@ -1,3 +1,4 @@
 test2 txt
 # git reset --hard HEAD^ 就是回到过去commit的指令
 # git reset --hard id号 也可以
+change in dev
