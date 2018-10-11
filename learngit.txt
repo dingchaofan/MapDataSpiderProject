@@ -1,6 +1,0 @@
-a = 1
-b = 2
-# write in 10.11 
-# git commit --amend --no-edit # "--no-edit": 不编辑, 直接合并到上一个 commit
-# 我们仅仅要对某个文件进行回到过去操作, 回到之前的commit. 使用checkout + id c6762a1 + -- + 文件目录, 我们就能将文件的指针 HEAD 放在这个时刻 c6762a1:
-然后修改这个文件再提交，就会有新的commit  这就是checkout的使用
