@@ -1,2 +1,4 @@
 a = 1
 b = 2
+# write in 10.11 
+# git commit --amend --no-edit # "--no-edit": 不编辑, 直接合并到上一个 commit
