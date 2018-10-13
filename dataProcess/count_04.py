@@ -197,8 +197,10 @@ def humanOps(lostdata, redundantdata):
 
 lostdata, redundantdata = checkdata()
 
-reshapedata(lostdata, redundantdata)
-
-lostdata, redundantdata = checkdata()
+if len(lostdata) > 0:
+	reshapedata(lostdata, redundantdata)
+	lostdata, redundantdata = checkdata()
+else:
+	print("Today's data is good")
 
 humanOps(lostdata, redundantdata)
