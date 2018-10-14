@@ -1,0 +1,12 @@
+此文件夹内是数据可视化的web项目代码和转换脚本代码
+
+数据可视化的web代码部署在xampp的htdocs的目录下
+D:\xampp\htdocs\myweb\dataVisualization
+
+dataVisualization\data目录下存放地图数据和地图数据转化成html可以解析的json数据的转换脚本pngtojson.py 此脚本将png图片批量转换成json格式的数据供可视化页面调用
+empty.json 是地图初试时候的空数据
+
+打开软件XAMPP Control Panel打开Apache服务
+在web浏览器地址栏里输入
+http://localhost/myweb/dataVisualization/heatmap-bmap.html
+进入数据可视化的页面
