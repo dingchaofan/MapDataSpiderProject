@@ -91,6 +91,8 @@ def checkdata():
 
 def reshapedata(lostdata, redundantdata):
 	redundantdataPre = []
+	PreData = ""
+	NextData = ""
 	for i in range(len(redundantdata)):
 
 		timestr = redundantdata[i].split('_')[-1].split('.')[0]
