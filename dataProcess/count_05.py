@@ -44,6 +44,7 @@ def checkdata():
 	lostdata = []
 	# 冗余的数据的
 	redundantdata = []
+	filename = ""
 
 	for hour in range(24):
 		for minute in range(60):
@@ -51,29 +52,29 @@ def checkdata():
 			flag1 = 0
 			hourstr = number_to_twochars(hour)
 			minutestr = number_to_twochars(minute)
-			for second in range(60):
+			for second in range(30):
 				secondstr = number_to_twochars(second)
 				filename = dirname+'_'+hourstr+'-'+minutestr+'-'+secondstr+'.png'
 				if os.path.isfile(filename):
 					flag0 = flag0 + 1
 					if flag0 >= 2:
 						redundantdata.append(filename)
-			# for second in range(30,60):
-			# 	secondstr =number_to_twochars(second)
-			# 	filename = dirname+'_'+hourstr+'-'+minutestr+'-'+secondstr+'.png'
-			# 	if os.path.isfile(filename):
-			# 		flag1 = flag1 + 1
-			# 		if flag1 >= 2:
-			# 			redundantdata.append(filename)
+			for second in range(30,60):
+				secondstr =number_to_twochars(second)
+				filename = dirname+'_'+hourstr+'-'+minutestr+'-'+secondstr+'.png'
+				if os.path.isfile(filename):
+					flag1 = flag1 + 1
+					if flag1 >= 2:
+						redundantdata.append(filename)
 			thisminutestr = dirname+'_'+hourstr+'-'+minutestr
 			if flag0 >= 1:
 				pass
 			else:
-				lostdata.append(thisminutestr + '.png')
-			# if flag1 >= 1:
-			# 	pass
-			# else:
-			# 	lostdata.append(thisminutestr + '-after.png')
+				lostdata.append(thisminutestr + '-before.png')
+			if flag1 >= 1:
+				pass
+			else:
+				lostdata.append(thisminutestr + '-after.png')
 
 	# 输出丢失数据
 	# for i in range(len(lostdata)):
@@ -93,6 +94,7 @@ def reshapedata(lostdata, redundantdata):
 	redundantdataPre = []
 	PreData = ""
 	NextData = ""
+	filename = ""
 	for i in range(len(redundantdata)):
 
 		timestr = redundantdata[i].split('_')[-1].split('.')[0]
@@ -103,61 +105,28 @@ def reshapedata(lostdata, redundantdata):
 		minute = twochars_to_number(minutestr)
 		second = twochars_to_number(secondstr)
 
-
-		# 获取冗余数据那一分钟之内的数据 
-		for isecond in range(10):
-			isecondstr = number_to_twochars(isecond)
-			filename = dirname+'_'+hourstr+'-'+minutestr+'-'+isecondstr+'.png'
-			if os.path.isfile(filename):
-				redundantdataPre.append(filename)
-				break
-		
-		# filena这个变量存放了冗余数据那分钟的另一个冗余数据 redundantdataPre
-		# 计算出前面那个数据的时分时间戳
-		if (minute - 1) >= 0:
-			PreData = dirname+'_'+hourstr+'-'+number_to_twochars(minute - 1) + '.png'
-		elif (hour - 1) >=0:
-			PreData =  dirname+'_'+number_to_twochars(hour - 1)+'-59' + '.png'
-		# 如果前面的数据缺失
-		if (PreData in lostdata):
-			if os.path.isfile(filename):
-				shutil.copy(filename,PreData.split('.')[0]+'-55.png')
-		# 计算出后面那个数据的时分时间戳
-		if (minute + 1) <= 59:
-			NextData =  dirname+'_'+hourstr+'-'+number_to_twochars(minute + 1) + '.png'
-		elif (hour + 1) <= 23:
-			NextData =  dirname+'_'+number_to_twochars(hour + 1)+'-00' + '.png'
-		if (NextData in lostdata):
-			if os.path.isfile(redundantdata[i]):
-				shutil.copy(redundantdata[i],NextData.split('.')[0]+'-05.png')
-
 		# 获取同是冗余数据的那个数据 填补冗余数据两侧的缺失数据
-		
-		#在mapdatapartof16中 每分钟一次的 冗余的基本是55秒之后的 
-		# 所以second<30的冗余基本没有 不考虑这种情况了
+		if second < 30:
+			for isecond in range(second-20):
+					isecondstr = number_to_twochars(isecond)
+					filename = dirname+'_'+hourstr+'-'+minutestr+'-'+isecondstr+'.png'
+					if os.path.isfile(filename):
+						redundantdataPre.append(filename)
+						break
 
-		# if second < 30:
-		# 	for isecond in range(second-20):
-		# 			isecondstr = number_to_twochars(isecond)
-		# 			filename = dirname+'_'+hourstr+'-'+minutestr+'-'+isecondstr+'.png'
-		# 			if os.path.isfile(filename):
-		# 				redundantdataPre.append(filename)
-		# 				break
+			if (minute - 1) >= 0:
+				PreData =  dirname+'_'+hourstr+'-'+number_to_twochars(minute - 1) + '-after.png'
+			elif (hour - 1) >= 0:
+				PreData =  dirname+'_'+number_to_twochars(hour - 1)+'-59' + '-after.png'
+			if (PreData in lostdata):
+				if os.path.isfile(filename):
+					# shutil.copy(filename,PreData.replace("after","59"))
+					os.rename(filename,PreData.replace("after","59"))
 
-		# 	if (minute - 1) >= 0:
-		# 		PreData =  dirname+'_'+hourstr+'-'+number_to_twochars(minute - 1) + '-after.png'
-		# 	elif (hour - 1) >= 0:
-		# 		PreData =  dirname+'_'+number_to_twochars(hour - 1)+'-59' + '-after.png'
-		# 	if (PreData in lostdata):
-		# 		if os.path.isfile(filename):
-		# 			# shutil.copy(filename,PreData.replace("after","59"))
-		# 			os.rename(filename,PreData.replace("after","59"))
+			NextData = dirname+'_'+hourstr+'-'+minutestr + '-after.png'
+			if (NextData in lostdata):
+				shutil.copy(redundantdata[i],NextData.replace("after","30"))
 
-		# 	NextData = dirname+'_'+hourstr+'-'+minutestr + '-after.png'
-		# 	if (NextData in lostdata):
-		# 		shutil.copy(redundantdata[i],NextData.replace("after","30"))
-
-'''
 		else:
 			for isecond in range(30 ,second-20):
 					isecondstr = number_to_twochars(isecond)
@@ -178,7 +147,7 @@ def reshapedata(lostdata, redundantdata):
 			if (NextData in lostdata):
 				if os.path.isfile(redundantdata[i]):
 					shutil.copy(redundantdata[i],NextData.replace("before","00"))
-'''
+
 
 	# for i in range(len(redundantdataPre)):
 	# 	print(redundantdataPre[i],' NO.',i)
@@ -244,11 +213,10 @@ def delete_small_files(numKB = 0):
 			print(file)
 
 
-delete_small_files(2700)
+delete_small_files(650)
 lostdata, redundantdata = checkdata()
 
 if len(lostdata) > 0:
-	# 如果是每分钟下一次数据，没有多余的下载了，就不需要reshapedata和checkdata了，改为pass即可
 	reshapedata(lostdata, redundantdata)
 	lostdata, redundantdata = checkdata()
 else:
