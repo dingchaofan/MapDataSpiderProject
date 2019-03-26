@@ -2,6 +2,11 @@ import os
 import string
 import sys
 import shutil
+# 操作excel文件
+import openpyxl
+
+import time
+import datetime
 
 # 获取脚本名的两个方法 输出脚本名
 # print(__file__)  
@@ -196,6 +201,10 @@ def humanOps(lostdata, redundantdata):
 					lostName = lostName +'、'+ name
 			print(lostName)
 
+	write_excel_instruction = input('do you want to write excel? key y/n:')
+	if (write_excel_instruction in listYes):
+		write_excel(lostdata,lostName)
+
 	input('press any key to exit')	
 
 # 删除过小的文件
@@ -213,7 +222,34 @@ def delete_small_files(numKB = 0):
 			print(file)
 
 
-delete_small_files(650)
+def write_excel(lostdata,lostName):
+	
+	# 打开xlsx
+	workbook = openpyxl.load_workbook('../../数据情况circle6.xlsx')
+	# 获取工作表
+	sheet = workbook[workbook.sheetnames[0]]
+
+	datalist = dirname.split('-')
+	# 从str转换到int
+	for x in range(len(datalist)):
+		datalist[x] = twochars_to_number(datalist[x])
+
+	# 获取单元格中的值 openpyxl是从1开始计数的
+	for data_index in range(2,sheet.max_row):
+		cell_value = sheet.cell(row=data_index, column=1).value
+		if (type(cell_value) == datetime.datetime):
+			if (cell_value.year == datalist[0]) and (cell_value.month == datalist[1]) and (cell_value.day == datalist[2]):
+				# 向excel中写入数据
+				sheet.cell(row=data_index, column=3).value = len(lostdata)
+				sheet.cell(row=data_index, column=4).value = lostName
+				workbook.save(r'../../数据情况circle6.xlsx')
+				print("write finished")
+		else:
+			print("pass not datetime cell")
+			pass
+
+
+delete_small_files(1150)
 lostdata, redundantdata = checkdata()
 
 if len(lostdata) > 0:

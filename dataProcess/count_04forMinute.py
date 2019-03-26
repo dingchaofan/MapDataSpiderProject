@@ -2,6 +2,11 @@ import os
 import string
 import sys
 import shutil
+# 操作excel文件
+import openpyxl
+
+import time
+import datetime
 
 # 获取脚本名的两个方法 输出脚本名
 # print(__file__)  
@@ -131,58 +136,6 @@ def reshapedata(lostdata, redundantdata):
 			if os.path.isfile(redundantdata[i]):
 				shutil.copy(redundantdata[i],NextData.split('.')[0]+'-05.png')
 
-		# 获取同是冗余数据的那个数据 填补冗余数据两侧的缺失数据
-		
-		#在mapdatapartof16中 每分钟一次的 冗余的基本是55秒之后的 
-		# 所以second<30的冗余基本没有 不考虑这种情况了
-
-		# if second < 30:
-		# 	for isecond in range(second-20):
-		# 			isecondstr = number_to_twochars(isecond)
-		# 			filename = dirname+'_'+hourstr+'-'+minutestr+'-'+isecondstr+'.png'
-		# 			if os.path.isfile(filename):
-		# 				redundantdataPre.append(filename)
-		# 				break
-
-		# 	if (minute - 1) >= 0:
-		# 		PreData =  dirname+'_'+hourstr+'-'+number_to_twochars(minute - 1) + '-after.png'
-		# 	elif (hour - 1) >= 0:
-		# 		PreData =  dirname+'_'+number_to_twochars(hour - 1)+'-59' + '-after.png'
-		# 	if (PreData in lostdata):
-		# 		if os.path.isfile(filename):
-		# 			# shutil.copy(filename,PreData.replace("after","59"))
-		# 			os.rename(filename,PreData.replace("after","59"))
-
-		# 	NextData = dirname+'_'+hourstr+'-'+minutestr + '-after.png'
-		# 	if (NextData in lostdata):
-		# 		shutil.copy(redundantdata[i],NextData.replace("after","30"))
-
-'''
-		else:
-			for isecond in range(30 ,second-20):
-					isecondstr = number_to_twochars(isecond)
-					filename = dirname+'_'+hourstr+'-'+minutestr+'-'+isecondstr+'.png'
-					if os.path.isfile(filename):
-						redundantdataPre.append(filename)
-						break
-			
-			PreData = dirname+'_'+hourstr+'-'+minutestr + '-before.png'
-			if (PreData in lostdata):
-				if os.path.isfile(filename):
-					os.rename(filename,PreData.replace("before","29"))
-
-			if (minute + 1) <= 59:
-				NextData =  dirname+'_'+hourstr+'-'+number_to_twochars(minute + 1) + '-before.png'
-			elif (hour + 1) <= 23:
-				NextData =  dirname+'_'+number_to_twochars(hour + 1)+'-00' + '-before.png'
-			if (NextData in lostdata):
-				if os.path.isfile(redundantdata[i]):
-					shutil.copy(redundantdata[i],NextData.replace("before","00"))
-'''
-
-	# for i in range(len(redundantdataPre)):
-	# 	print(redundantdataPre[i],' NO.',i)
-	# print('the num of redundantdataPre :',len(redundantdataPre))
 
 def humanOps(lostdata, redundantdata):
 	listYes = ['y','yse','Y']
@@ -227,6 +180,10 @@ def humanOps(lostdata, redundantdata):
 					lostName = lostName +'、'+ name
 			print(lostName)
 
+	write_excel_instruction = input('do you want to write excel? key y/n:')
+	if (write_excel_instruction in listYes):
+		write_excel(lostdata,lostName)
+
 	input('press any key to exit')	
 
 # 删除过小的文件
@@ -242,6 +199,32 @@ def delete_small_files(numKB = 0):
 				os.remove(file)
 		else:
 			print(file)
+
+def write_excel(lostdata,lostName):
+	
+	# 打开xlsx
+	workbook = openpyxl.load_workbook('../../数据情况partof16.xlsx')
+	# 获取工作表
+	sheet = workbook[workbook.sheetnames[0]]
+
+	datalist = dirname.split('-')
+	# 从str转换到int
+	for x in range(len(datalist)):
+		datalist[x] = twochars_to_number(datalist[x])
+
+	# 获取单元格中的值 openpyxl是从1开始计数的
+	for data_index in range(2,sheet.max_row):
+		cell_value = sheet.cell(row=data_index, column=1).value
+		if (type(cell_value) == datetime.datetime):
+			if (cell_value.year == datalist[0]) and (cell_value.month == datalist[1]) and (cell_value.day == datalist[2]):
+				# 向excel中写入数据
+				sheet.cell(row=data_index, column=3).value = len(lostdata)
+				sheet.cell(row=data_index, column=4).value = lostName
+				workbook.save(r'../../数据情况partof16.xlsx')
+				print("write finished")
+		else:
+			print("pass not datetime cell")
+			pass
 
 
 delete_small_files(2700)
