@@ -141,6 +141,11 @@ def humanOps(lostdata, redundantdata):
 	listYes = ['y','yse','Y']
 	lostName = ""
 
+	directWrite_instruction = input('do you want to directWrite the file details? key y/n:')
+	if (directWrite_instruction in listYes):
+		directWrite()
+		return 0
+		
 	showdetails_instruction = input('do you want to show the file details? key y/n:')
 	if (showdetails_instruction in listYes):
 		print('show the file details:\n')
@@ -227,6 +232,33 @@ def write_excel(lostdata,lostName):
 			pass
 
 
+# 直接操作写入
+def directWrite():
+	lostName = ""
+	# 删除冗余数据
+	if len(redundantdata) > 0:
+		print('delete redundantdata')
+		for i in range(len(redundantdata)):
+			if os.path.isfile(redundantdata[i]):
+				os.remove(redundantdata[i])
+				# redundantdata.pop(i)
+
+	# 输出缺失情况
+	if len(lostdata) > 0:
+		print("lostdata num is:",len(lostdata))
+		for i in range(len(lostdata)):
+			name = lostdata[i].split('_')[1]
+			name = name.split('.')[0]
+			if(len(lostName) <= 1):
+				lostName = name
+			else:
+				lostName = lostName +'、'+ name
+		print(lostName)
+
+	# 写入表格
+	write_excel(lostdata,lostName)
+	input('press any key to exit')
+
 delete_small_files(2700)
 lostdata, redundantdata = checkdata()
 
@@ -234,7 +266,8 @@ if len(lostdata) > 0:
 	# 如果是每分钟下一次数据，没有多余的下载了，就不需要reshapedata和checkdata了，改为pass即可
 	reshapedata(lostdata, redundantdata)
 	lostdata, redundantdata = checkdata()
+	humanOps(lostdata, redundantdata)
 else:
 	print("Today's data is good")
+	directWrite()
 
-humanOps(lostdata, redundantdata)

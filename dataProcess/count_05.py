@@ -3,6 +3,8 @@ import string
 import sys
 import shutil
 # 操作excel文件
+import xlrd
+import xlwt
 import openpyxl
 
 import time
@@ -162,6 +164,11 @@ def humanOps(lostdata, redundantdata):
 	listYes = ['y','yse','Y']
 	lostName = ""
 
+	directWrite_instruction = input('do you want to directWrite the file details? key y/n:')
+	if (directWrite_instruction in listYes):
+		directWrite()
+		return 0
+
 	showdetails_instruction = input('do you want to show the file details? key y/n:')
 	if (showdetails_instruction in listYes):
 		print('show the file details:\n')
@@ -188,6 +195,7 @@ def humanOps(lostdata, redundantdata):
 		else:
 			print('save redundantdata for a while')
 
+	# 是否输出缺失情况
 	if len(lostdata) > 0:
 		output_lostdataname = input('do you want to print lost data name? key y/n:')
 		if (output_lostdataname in listYes):
@@ -200,6 +208,7 @@ def humanOps(lostdata, redundantdata):
 				else:
 					lostName = lostName +'、'+ name
 			print(lostName)
+
 
 	write_excel_instruction = input('do you want to write excel? key y/n:')
 	if (write_excel_instruction in listYes):
@@ -221,11 +230,9 @@ def delete_small_files(numKB = 0):
 		else:
 			print(file)
 
-
 def write_excel(lostdata,lostName):
-	
 	# 打开xlsx
-	workbook = openpyxl.load_workbook('../../数据情况circle6.xlsx')
+	workbook = openpyxl.load_workbook('../../数据情况mapdata.xlsx')
 	# 获取工作表
 	sheet = workbook[workbook.sheetnames[0]]
 
@@ -242,20 +249,64 @@ def write_excel(lostdata,lostName):
 				# 向excel中写入数据
 				sheet.cell(row=data_index, column=3).value = len(lostdata)
 				sheet.cell(row=data_index, column=4).value = lostName
-				workbook.save(r'../../数据情况circle6.xlsx')
+				workbook.save(r'../../数据情况mapdata.xlsx')
 				print("write finished")
 		else:
 			print("pass not datetime cell")
 			pass
+# 直接操作写入
+def directWrite():
+	lostName = ""
+	# 删除冗余数据
+	if len(redundantdata) > 0:
+		print('delete redundantdata')
+		for i in range(len(redundantdata)):
+			if os.path.isfile(redundantdata[i]):
+				os.remove(redundantdata[i])
+				# redundantdata.pop(i)
 
+	# 输出缺失情况
+	if len(lostdata) > 0:
+		print("lostdata num is:",len(lostdata))
+		for i in range(len(lostdata)):
+			name = lostdata[i].split('_')[1]
+			name = name.split('.')[0]
+			if(len(lostName) <= 1):
+				lostName = name
+			else:
+				lostName = lostName +'、'+ name
+		print(lostName)
 
-delete_small_files(1150)
+	# 写入表格
+	write_excel(lostdata,lostName)
+	input('press any key to exit')
+
+delete_small_files(650)
 lostdata, redundantdata = checkdata()
 
 if len(lostdata) > 0:
 	reshapedata(lostdata, redundantdata)
 	lostdata, redundantdata = checkdata()
+	humanOps(lostdata, redundantdata)
 else:
 	print("Today's data is good")
+	directWrite()
 
-humanOps(lostdata, redundantdata)
+
+
+
+# 日期 星期 缺失数 具体的缺失情况 备注 (日期和星期是自动生成的)
+# 2018/7/2 星期一 6
+# EXCEL的日期是以序列数的形式存储的，即保存的日期实际是这个日期到1900-1-1相差的天数。
+# 当单元格格式为数值时，就会显示出这个差值，即2006-12-1与1900-1-1相差39052天
+
+
+
+
+
+
+
+
+
+
+
