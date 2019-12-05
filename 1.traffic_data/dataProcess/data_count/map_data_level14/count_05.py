@@ -10,21 +10,6 @@ import openpyxl
 import time
 import datetime
 
-# 获取脚本名的两个方法 输出脚本名
-# print(__file__)  
-# print(sys.argv[0])
-
-# 获取执行脚本的目录 输出绝对路径
-# print(sys.path[0])   
-# print(os.getcwd())
-
-# split方法 输出文件名
-# print(os.path.split(os.getcwd()))
-# print(os.path.split(__file__)[-1])
-# print(os.path.split(__file__)[-1].split('.')[0])
-# 输出文件的真实路径和所在文件夹的路径
-# print(os.path.realpath(__file__))
-# print(os.path.dirname(os.path.realpath(__file__)))
 
 # 获取文件夹名
 dirname =  os.path.split(os.getcwd())[-1]
@@ -45,7 +30,7 @@ def twochars_to_number(twocharsstr):
 	return time_num
 
 # 检查文件夹中文件的冗余和丢失情况 返回lostdata, redundantdata这两个数组
-def checkdata():
+def checkdata_rate2():
 
 	# 丢失的数据
 	lostdata = []
@@ -97,7 +82,38 @@ def checkdata():
 	return lostdata, redundantdata
 
 
-def reshapedata(lostdata, redundantdata):
+# 检查文件夹中文件的冗余和丢失情况 返回lostdata, redundantdata这两个数组
+def checkdata_rate1():
+
+	# 丢失的数据
+	lostdata = []
+	# 冗余的数据的
+	redundantdata = []
+
+	for hour in range(24):
+		for minute in range(60):
+			flag0 = 0
+			flag1 = 0
+			hourstr = number_to_twochars(hour)
+			minutestr = number_to_twochars(minute)
+			for second in range(60):
+				secondstr = number_to_twochars(second)
+				filename = dirname+'_'+hourstr+'-'+minutestr+'-'+secondstr+'.png'
+				if os.path.isfile(filename):
+					flag0 = flag0 + 1
+					if flag0 >= 2:
+						redundantdata.append(filename)
+			thisminutestr = dirname+'_'+hourstr+'-'+minutestr
+			if flag0 >= 1:
+				pass
+			else:
+				lostdata.append(thisminutestr + '.png')
+
+	print('the num of lostdata :',len(lostdata))
+	print('the num of redundantdata :',len(redundantdata))
+	return lostdata, redundantdata
+
+def reshapedata_rate2(lostdata, redundantdata):
 	redundantdataPre = []
 	PreData = ""
 	NextData = ""
@@ -156,9 +172,47 @@ def reshapedata(lostdata, redundantdata):
 					shutil.copy(redundantdata[i],NextData.replace("before","00"))
 
 
-	# for i in range(len(redundantdataPre)):
-	# 	print(redundantdataPre[i],' NO.',i)
-	# print('the num of redundantdataPre :',len(redundantdataPre))
+def reshapedata_rate1(lostdata, redundantdata):
+	redundantdataPre = []
+	PreData = ""
+	NextData = ""
+	for i in range(len(redundantdata)):
+
+		timestr = redundantdata[i].split('_')[-1].split('.')[0]
+		hourstr,minutestr,secondstr= timestr.split('-')
+
+
+		hour = twochars_to_number(hourstr)
+		minute = twochars_to_number(minutestr)
+		second = twochars_to_number(secondstr)
+
+
+		# 获取冗余数据那一分钟之内的数据 
+		for isecond in range(10):
+			isecondstr = number_to_twochars(isecond)
+			filename = dirname+'_'+hourstr+'-'+minutestr+'-'+isecondstr+'.png'
+			if os.path.isfile(filename):
+				redundantdataPre.append(filename)
+				break
+		
+		# filena这个变量存放了冗余数据那分钟的另一个冗余数据 redundantdataPre
+		# 计算出前面那个数据的时分时间戳
+		if (minute - 1) >= 0:
+			PreData = dirname+'_'+hourstr+'-'+number_to_twochars(minute - 1) + '.png'
+		elif (hour - 1) >=0:
+			PreData =  dirname+'_'+number_to_twochars(hour - 1)+'-59' + '.png'
+		# 如果前面的数据缺失
+		if (PreData in lostdata):
+			if os.path.isfile(filename):
+				shutil.copy(filename,PreData.split('.')[0]+'-55.png')
+		# 计算出后面那个数据的时分时间戳
+		if (minute + 1) <= 59:
+			NextData =  dirname+'_'+hourstr+'-'+number_to_twochars(minute + 1) + '.png'
+		elif (hour + 1) <= 23:
+			NextData =  dirname+'_'+number_to_twochars(hour + 1)+'-00' + '.png'
+		if (NextData in lostdata):
+			if os.path.isfile(redundantdata[i]):
+				shutil.copy(redundantdata[i],NextData.split('.')[0]+'-05.png')
 
 def humanOps(lostdata, redundantdata):
 	listYes = ['y','yse','Y']
@@ -232,7 +286,7 @@ def delete_small_files(numKB = 0):
 
 def write_excel(lostdata,lostName):
 	# 打开xlsx
-	workbook = openpyxl.load_workbook('../../数据情况mapdata.xlsx')
+	workbook = openpyxl.load_workbook('../../数据情况level14.xlsx')
 	# 获取工作表
 	sheet = workbook[workbook.sheetnames[0]]
 
@@ -249,7 +303,7 @@ def write_excel(lostdata,lostName):
 				# 向excel中写入数据
 				sheet.cell(row=data_index, column=3).value = len(lostdata)
 				sheet.cell(row=data_index, column=4).value = lostName
-				workbook.save(r'../../数据情况mapdata.xlsx')
+				workbook.save(r'../../数据情况level14.xlsx')
 				print("write finished")
 		else:
 			print("pass not datetime cell")
@@ -276,22 +330,41 @@ def directWrite():
 			else:
 				lostName = lostName +'、'+ name
 		print(lostName)
-
+		if len(lostdata) > (data_rate_type*1440)/8:
+			print("lost too much")
+			lostName = ""
 	# 写入表格
 	write_excel(lostdata,lostName)
 	input('press any key to exit')
+	
+print(os.getcwd())
+delete_small_files(1600)
 
-delete_small_files(650)
-lostdata, redundantdata = checkdata()
+data_rate_type = 2 # 每秒钟采集两次数据
+print("采集频率为每秒钟 "+str(data_rate_type)+" 次")
+lostdata = []
+redundantdata = []
+# 每秒钟采集两次数据
+if(data_rate_type == 2):
+	lostdata, redundantdata = checkdata_rate2()
+# 每秒钟采集两次数据
+elif(data_rate_type == 1):
+	lostdata, redundantdata = checkdata_rate1()
 
-if len(lostdata) > 0:
-	reshapedata(lostdata, redundantdata)
-	lostdata, redundantdata = checkdata()
-	humanOps(lostdata, redundantdata)
-else:
+if len(lostdata) == 0 and len(redundantdata) == 0:
 	print("Today's data is good")
 	directWrite()
-
+elif len(redundantdata) == 0 and len(lostdata) > 0:
+	print("Today's data has been processed")
+	directWrite()
+else:
+	if(data_rate_type == 2):
+		reshapedata_rate2(lostdata, redundantdata)
+		lostdata, redundantdata = checkdata_rate2()
+	elif(data_rate_type == 1):
+		reshapedata_rate1(lostdata, redundantdata)
+		lostdata, redundantdata = checkdata_rate1()
+	humanOps(lostdata, redundantdata)
 
 
 

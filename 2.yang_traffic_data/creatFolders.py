@@ -2,7 +2,7 @@ import os
 import shutil
 
 folderNameList = []
-src = "count_04.py"  #要复制的脚本名
+src = ""  #要复制的脚本名
 
 # define func let int transto two chars like 0 --> '00'
 def number_to_twochars(time_num):
@@ -59,7 +59,7 @@ def creatFloders():
 	        os.mkdir(folderName)
 	        print(folderName,"is created")
 	        # folderNameList.append(folderName) #不需要文件名list了
-	        shutil.copy(src,folderName) #dst_dir表示目的目录
+	        # shutil.copy(src,folderName) #dst_dir表示目的目录
 	    else:
 	        print(folderName," is exists. error!!!")
             
