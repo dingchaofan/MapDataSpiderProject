@@ -101,8 +101,32 @@ dataVisualization文件夹是数据的转换和可视化，将png数据批量转
 
 ### 数据采集的人工操作流程
 
-```shell
-python MoveDataToTemp.py 2021 01 18     # 将map_data_level14、map_data_level16目录中当天的数据文件移动到tempdata14、tempdata16中
-# 手动下载数据，推荐使用软件WinScp，下载速度快
-python DeleteDataInTemp.py 2021 01 18    # 删除tempdata14、tempdata16中数据
-```
+#### 百度拥堵图片：
+
+1. 数据下载
+
+    ```shell
+    python MoveDataToTemp.py 2021 01 18     # 将map_data_level14、map_data_level16目录中当天的数据文件移动到tempdata14、tempdata16中
+    # 手动下载数据，推荐使用软件WinScp，下载速度快
+    python DeleteDataInTemp.py 2021 01 18    # 删除tempdata14、tempdata16中数据
+    ```
+
+2. 本地数据整理
+   1. 在每日的文件夹中运行`count05.py`,将当日数据情况写入到excel表格中
+   2. 也可以下载好一个月的数据之后在当月目录下运行`countAll.py`，遍历调用每日目录下的`count05.py`
+   3. 根据`count05.py`程序中的提示进行手工操作
+
+#### 北京市交通委数据
+
+1. 数据下载
+
+    ```shell
+    # 进入目录yang_traffic_data目录
+    # 选择文件名含020-05字段的文件 并移动到另一个文件夹
+    find traffic_data/ -name '*020-05*'|xargs -i mv {} tempdata/
+    # 手工下载tempdata目录到本地
+    ```
+
+2. 本地数据整理
+    在当月目录下`python createFolders.py`创建每日目录。
+    在当月目录下`python movefiles.py`将`tempdata`中数据按日期移动到每日目录。
