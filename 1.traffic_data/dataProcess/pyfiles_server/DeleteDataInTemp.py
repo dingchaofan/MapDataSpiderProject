@@ -6,7 +6,7 @@ import sys
 
 rootDirPath = os.getcwd()
 folderName = []
-tempdatadir = ['tempdata', 'tempdata1', 'tempdata2']
+tempdatadir = ['tempdata14', 'tempdata16', 'tempdata17']
 
 
 # define func let int transto two chars like 0 --> '00'
